@@ -6,6 +6,12 @@ const AlgoritmoProductosMedios = () => {
   const [num, setNum] = useState('');
   const [digito, setDigito] = useState(4);
   const [resultados, setResultados] = useState([]);
+  const [pruebaMedias, setPruebaMedias] = useState(null);
+  const [pruebaVarianza, setPruebaVarianza] = useState(null);
+  const [sumaR, setSumaR] = useState(null);
+  const [sumaDesv, setSumaDesv] = useState(null);
+  const [cumpleMedias, setCumpleMedias] = useState(null);
+  const [cumpleVarianza, setCumpleVarianza] = useState(null);
 
   const algProMed = (semilla1, semilla2, num, digito) => {
     let sem1 = semilla1;
@@ -38,7 +44,7 @@ const AlgoritmoProductosMedios = () => {
       resultadosTemp.push({
         iteracion: m + 1,
         producto: producto,
-        resultado: resultado.toFixed(4),
+        resultado: resultado,
       });
 
       sem1 = sem2;
@@ -46,6 +52,32 @@ const AlgoritmoProductosMedios = () => {
     }
 
     setResultados(resultadosTemp);
+    realizarPruebas(resultadosTemp.map(res => res.resultado));
+  };
+
+  const realizarPruebas = (numeros) => {
+    const N = numeros.length;
+    const promedio = numeros.reduce((acc, num) => acc + num, 0) / N;
+    const sumaRi = numeros.reduce((acc, num) => acc + num, 0);
+    const sumaDesviaciones = numeros.reduce((acc, num) => acc + (num - promedio) ** 2, 0);
+    const varianza = sumaDesviaciones / N;
+
+    // Prueba de Medias
+    const pruebaMediasResultado = (promedio - 0.5) / (1 / Math.sqrt(12 * N));
+    setPruebaMedias(pruebaMediasResultado.toFixed(4));
+
+    // Determinar si cumple con la Prueba de Medias (intervalo -1.96 a 1.96 para 95% confianza)
+    setCumpleMedias(pruebaMediasResultado >= -1.96 && pruebaMediasResultado <= 1.96 ? 'Sí' : 'No');
+
+    // Prueba de Varianza
+    setPruebaVarianza(varianza.toFixed(4));
+
+    // Determinar si cumple con la Prueba de Varianza (valor cercano a 0.0833)
+    setCumpleVarianza(varianza >= 0.07 && varianza <= 0.09 ? 'Sí' : 'No');
+
+    // Guardar suma de Ri y suma de desviaciones
+    setSumaR(sumaRi.toFixed(4));
+    setSumaDesv(sumaDesviaciones.toFixed(4));
   };
 
   const handleSubmit = (event) => {
@@ -116,11 +148,20 @@ const AlgoritmoProductosMedios = () => {
             <tr key={index}>
               <td style={{ border: '1px solid #dddddd', padding: '8px 12px', textAlign: 'center' }}>{res.iteracion}</td>
               <td style={{ border: '1px solid #dddddd', padding: '8px 12px', textAlign: 'center' }}>{res.producto}</td>
-              <td style={{ border: '1px solid #dddddd', padding: '8px 12px', textAlign: 'center' }}>{res.resultado}</td>
+              <td style={{ border: '1px solid #dddddd', padding: '8px 12px', textAlign: 'center' }}>{res.resultado.toFixed(4)}</td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      {pruebaMedias && (
+        <div>
+          <h3>Prueba de Medias: {pruebaMedias} (Cumple: {cumpleMedias})</h3>
+          <h3>Prueba de Varianza: {pruebaVarianza} (Cumple: {cumpleVarianza})</h3>
+          <h3>Suma de Ri: {sumaR}</h3>
+          <h3>Suma de (Ri - R)^2: {sumaDesv}</h3>
+        </div>
+      )}
     </div>
   );
 };
